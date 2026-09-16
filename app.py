@@ -1,10 +1,11 @@
 from fastapi import FastAPI, UploadFile, File
 from google import genai
 from google.genai import types
+import json
 
 app = FastAPI(
     title="PlantCheck AI",
-    description="AI-СЃРµСЂРІРёСЃ РґР»СЏ Р°РЅР°Р»РёР·Р° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЂР°СЃС‚РµРЅРёР№ РїРѕ С„РѕС‚РѕРіСЂР°С„РёРё"
+    description="AI-сервис для анализа состояния растений по фотографии"
 )
 
 client = genai.Client()
@@ -18,7 +19,6 @@ def home():
 @app.post("/analyze")
 async def analyze_plant(file: UploadFile = File(...)):
     image_data = await file.read()
-
     mime_type = file.content_type or "image/jpeg"
 
     response = client.models.generate_content(
@@ -28,22 +28,39 @@ async def analyze_plant(file: UploadFile = File(...)):
                 data=image_data,
                 mime_type=mime_type
             ),
-            """РџСЂРѕР°РЅР°Р»РёР·РёСЂСѓР№ С„РѕС‚РѕРіСЂР°С„РёСЋ СЂР°СЃС‚РµРЅРёСЏ.
+            """
+Проанализируй фотографию растения.
 
-РћС‚РІРµС‚СЊ РїРѕ-СЂСѓСЃСЃРєРё Рё СѓРєР°Р¶Рё:
-1. РќР°Р·РІР°РЅРёРµ СЂР°СЃС‚РµРЅРёСЏ.
-2. Р§С‚Рѕ РІРёРґРЅРѕ РЅР° С„РѕС‚РѕРіСЂР°С„РёРё.
-3. Р•СЃС‚СЊ Р»Рё РїСЂРёР·РЅР°РєРё РїСЂРѕР±Р»РµРјС‹ РёР»Рё Р±РѕР»РµР·РЅРё.
-4. РќР°РёР±РѕР»РµРµ РІРµСЂРѕСЏС‚РЅР°СЏ РїСЂРёС‡РёРЅР°.
-5. Р§С‚Рѕ СЂРµРєРѕРјРµРЅРґСѓРµС‚СЃСЏ СЃРґРµР»Р°С‚СЊ.
-6. РЈРІРµСЂРµРЅРЅРѕСЃС‚СЊ РІ РґРёР°РіРЅРѕР·Рµ РѕС‚ 0 РґРѕ 100%.
+Верни ТОЛЬКО корректный JSON без Markdown и без ```.
 
-Р•СЃР»Рё РїРѕ РѕРґРЅРѕР№ С„РѕС‚РѕРіСЂР°С„РёРё РЅРµР»СЊР·СЏ РїРѕСЃС‚Р°РІРёС‚СЊ С‚РѕС‡РЅС‹Р№ РґРёР°РіРЅРѕР·,
-РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ СЃРєР°Р¶Рё РѕР± СЌС‚РѕРј."""
+Формат ответа:
+
+{
+  "plant_name": "название растения",
+  "observations": "что видно на фотографии",
+  "problem": "признаки проблемы или болезни",
+  "cause": "наиболее вероятная причина",
+  "recommendation": "что рекомендуется сделать",
+  "confidence": 0
+}
+
+Поле confidence должно содержать число от 0 до 100.
+
+Если по одной фотографии нельзя поставить точный диагноз,
+укажи это в соответствующих полях.
+"""
         ]
     )
 
+    try:
+        result = json.loads(response.text)
+    except json.JSONDecodeError:
+        return {
+            "filename": file.filename,
+            "analysis": response.text
+        }
+
     return {
         "filename": file.filename,
-        "analysis": response.text
+        **result
     }
