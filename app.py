@@ -62,3 +62,10 @@ If an exact diagnosis cannot be made from one photo, say so.
         "filename": file.filename,
         **result
     }
+
+from fastapi.responses import FileResponse
+
+
+@app.get("/app")
+def web_app():
+    return FileResponse("index.html")

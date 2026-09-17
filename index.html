@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PlantCheck AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 760px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f4f8f4;
+            color: #243024;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0,0,0,.08);
+        }
+        h1 { margin-top: 0; }
+        button {
+            padding: 12px 22px;
+            margin-top: 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 25px;
+            line-height: 1.5;
+        }
+        .field {
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="card">
+    <h1>🌿 PlantCheck AI</h1>
+    <p>Загрузите фотографию растения — искусственный интеллект проанализирует его состояние.</p>
+
+    <input type="file" id="photo" accept="image/*">
+    <br>
+    <button onclick="analyzePlant()">Анализировать растение</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+async function analyzePlant() {
+    const fileInput = document.getElementById("photo");
+    const result = document.getElementById("result");
+
+    if (!fileInput.files.length) {
+        result.innerHTML = "Сначала выберите фотографию.";
+        return;
+    }
+
+    result.innerHTML = "Анализируем фотографию...";
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    try {
+        const response = await fetch("/analyze", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        result.innerHTML = `
+            <div class="field"><b>Растение:</b> ${data.plant_name || "Не определено"}</div>
+            <div class="field"><b>Что видно:</b> ${data.observations || "-"}</div>
+            <div class="field"><b>Проблема:</b> ${data.problem || "-"}</div>
+            <div class="field"><b>Вероятная причина:</b> ${data.cause || "-"}</div>
+            <div class="field"><b>Что делать:</b> ${data.recommendation || "-"}</div>
+            <div class="field"><b>Уверенность AI:</b> ${data.confidence ?? "-"}%</div>
+        `;
+    } catch (error) {
+        result.innerHTML = "Не удалось выполнить анализ. Попробуйте ещё раз.";
+    }
+}
+</script>
+</body>
+</html>
