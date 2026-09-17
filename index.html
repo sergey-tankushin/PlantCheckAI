@@ -20,16 +20,27 @@
             box-shadow: 0 4px 18px rgba(0,0,0,.08);
         }
         h1 { margin-top: 0; }
+
+        #preview {
+            display: none;
+            max-width: 100%;
+            max-height: 420px;
+            margin-top: 20px;
+            border-radius: 12px;
+        }
+
         button {
             padding: 12px 22px;
             margin-top: 15px;
             font-size: 16px;
             cursor: pointer;
         }
+
         #result {
             margin-top: 25px;
             line-height: 1.5;
         }
+
         .field {
             margin-bottom: 14px;
         }
@@ -39,9 +50,16 @@
 <body>
 <div class="card">
     <h1>🌿 PlantCheck AI</h1>
-    <p>Загрузите фотографию растения — искусственный интеллект проанализирует его состояние.</p>
 
-    <input type="file" id="photo" accept="image/*">
+    <p>
+        Загрузите фотографию растения — искусственный интеллект
+        проанализирует его состояние.
+    </p>
+
+    <input type="file" id="photo" accept="image/*" onchange="showPreview()">
+
+    <img id="preview" alt="Фотография растения">
+
     <br>
     <button onclick="analyzePlant()">Анализировать растение</button>
 
@@ -49,6 +67,22 @@
 </div>
 
 <script>
+function showPreview() {
+    const fileInput = document.getElementById("photo");
+    const preview = document.getElementById("preview");
+    const result = document.getElementById("result");
+
+    if (!fileInput.files.length) {
+        preview.style.display = "none";
+        return;
+    }
+
+    preview.src = URL.createObjectURL(fileInput.files[0]);
+    preview.style.display = "block";
+    result.innerHTML = "";
+}
+
+
 async function analyzePlant() {
     const fileInput = document.getElementById("photo");
     const result = document.getElementById("result");
@@ -68,6 +102,10 @@ async function analyzePlant() {
             method: "POST",
             body: formData
         });
+
+        if (!response.ok) {
+            throw new Error("Server error");
+        }
 
         const data = await response.json();
 
