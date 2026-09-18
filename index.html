@@ -1,11 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="ru">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PlantCheck AI — диагностика растений</title>
+
+<title>PlantCheck AI</title>
 
 <style>
+
 * { box-sizing: border-box; }
 
 body {
@@ -28,21 +31,7 @@ body {
     box-shadow: 0 8px 30px rgba(0,0,0,.08);
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.logo-icon {
-    font-size: 38px;
-}
-
-h1 {
-    margin: 0;
-    font-size: 32px;
-}
+h1 { margin-top: 0; }
 
 .subtitle {
     color: #607060;
@@ -57,22 +46,17 @@ h1 {
     padding: 22px;
 }
 
-input[type=file] {
-    font-size: 15px;
-}
-
 #preview {
     display: none;
     max-width: 100%;
-    max-height: 500px;
-    margin: 22px auto 0;
+    max-height: 480px;
+    margin: 20px auto 0;
     border-radius: 14px;
-    object-fit: contain;
 }
 
 button {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 18px;
     padding: 15px;
     border: 0;
     border-radius: 12px;
@@ -83,44 +67,12 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    background: #216638;
-}
-
 button:disabled {
     opacity: .6;
-    cursor: wait;
 }
 
-#status {
-    display: none;
-    text-align: center;
-    padding: 25px 10px 5px;
-    font-weight: bold;
-}
-
-.spinner {
-    width: 32px;
-    height: 32px;
-    margin: 0 auto 12px;
-    border: 4px solid #dbe7db;
-    border-top: 4px solid #287a43;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-#result {
-    display: none;
+.section {
     margin-top: 30px;
-}
-
-.result-title {
-    font-size: 24px;
-    margin-bottom: 18px;
 }
 
 .result-item {
@@ -131,62 +83,79 @@ button:disabled {
     line-height: 1.55;
 }
 
-.result-label {
-    font-weight: bold;
+.label {
     display: block;
+    font-weight: bold;
     margin-bottom: 6px;
 }
 
-.confidence-box {
-    margin-top: 18px;
+.question {
+    margin: 18px 0;
 }
 
-.confidence-bar {
-    height: 12px;
-    background: #e4ebe4;
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 8px;
+.question-text {
+    font-weight: bold;
+    margin-bottom: 8px;
+    line-height: 1.45;
 }
 
-#confidenceFill {
-    height: 100%;
-    width: 0;
-    background: #287a43;
+textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 1px solid #b9c6b9;
+    border-radius: 9px;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
 }
 
 .notice {
-    margin-top: 25px;
+    margin-top: 20px;
     padding: 15px;
     background: #fff8e6;
     border-radius: 10px;
-    color: #665522;
-    font-size: 14px;
     line-height: 1.5;
+    font-size: 14px;
 }
 
-.error {
+#loading {
+    display: none;
+    text-align: center;
     margin-top: 20px;
-    padding: 15px;
-    background: #fff0f0;
-    border-radius: 10px;
-    color: #9b2929;
+    font-weight: bold;
 }
 
-@media (max-width: 600px) {
+#error {
+    color: #9b2929;
+    margin-top: 18px;
+}
+
+#step1, #step2 {
+    display: none;
+}
+
+.plan li {
+    margin-bottom: 9px;
+    line-height: 1.45;
+}
+
+.confidence {
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+@media (max-width:600px) {
+
     .container {
         margin: 10px auto;
         padding: 10px;
     }
 
     .card {
-        padding: 22px;
-    }
-
-    h1 {
-        font-size: 27px;
+        padding: 20px;
     }
 }
+
 </style>
 </head>
 
@@ -195,101 +164,185 @@ button:disabled {
 <div class="container">
 <div class="card">
 
-    <div class="logo">
-        <div class="logo-icon">🌿</div>
-        <h1>PlantCheck AI</h1>
-    </div>
+<h1>🌿 PlantCheck AI</h1>
 
-    <div class="subtitle">
-        Сфотографируйте растение, загрузите снимок и получите
-        AI-анализ его состояния и рекомендации по уходу.
-    </div>
+<div class="subtitle">
+Загрузите фотографию растения. AI сначала проведёт предварительный
+анализ, затем задаст несколько уточняющих вопросов и подготовит
+персональный план действий.
+</div>
 
-    <div class="upload-area">
-        <b>Выберите фотографию растения</b>
-        <br><br>
+<div class="upload-area">
 
-        <input
-            type="file"
-            id="photo"
-            accept="image/*"
-            onchange="showPreview()"
-        >
+<b>Фотография растения</b>
+<br><br>
 
-        <img id="preview" alt="Фотография растения">
-    </div>
+<input
+    type="file"
+    id="photo"
+    accept="image/*"
+    onchange="showPreview()"
+>
 
-    <button id="analyzeButton" onclick="analyzePlant()">
-        Анализировать растение
-    </button>
+<img id="preview">
 
-    <div id="status">
-        <div class="spinner"></div>
-        AI анализирует фотографию...
-    </div>
+</div>
 
-    <div id="error"></div>
+<button id="analyzeButton" onclick="analyzePlant()">
+Начать диагностику
+</button>
 
-    <div id="result">
+<div id="loading">
+🌿 AI анализирует информацию...
+</div>
 
-        <div class="result-title">
-            Результат анализа
-        </div>
+<div id="error"></div>
 
-        <div class="result-item">
-            <span class="result-label">🌱 Растение</span>
-            <span id="plantName"></span>
-        </div>
 
-        <div class="result-item">
-            <span class="result-label">👁 Что видно</span>
-            <span id="observations"></span>
-        </div>
+<div id="step1" class="section">
 
-        <div class="result-item">
-            <span class="result-label">⚠️ Возможная проблема</span>
-            <span id="problem"></span>
-        </div>
+<h2>Шаг 1. Предварительный анализ</h2>
 
-        <div class="result-item">
-            <span class="result-label">🔎 Вероятная причина</span>
-            <span id="cause"></span>
-        </div>
+<div class="result-item">
+<span class="label">🌱 Растение</span>
+<span id="plantName"></span>
+</div>
 
-        <div class="result-item">
-            <span class="result-label">✅ Что рекомендуется сделать</span>
-            <span id="recommendation"></span>
-        </div>
+<div class="result-item">
+<span class="label">👁 Что видно</span>
+<span id="observations"></span>
+</div>
 
-        <div class="confidence-box">
-            <b>Уверенность AI: <span id="confidence"></span>%</b>
+<div class="result-item">
+<span class="label">⚠️ Возможная проблема</span>
+<span id="problem"></span>
+</div>
 
-            <div class="confidence-bar">
-                <div id="confidenceFill"></div>
-            </div>
-        </div>
+<div class="result-item">
+<span class="label">🔎 Предварительная причина</span>
+<span id="preliminaryCause"></span>
+</div>
 
-        <div class="notice">
-            PlantCheck AI анализирует растение по фотографии.
-            Результат является ориентировочным: некоторые заболевания,
-            вредители и проблемы с корнями невозможно точно определить
-            только по одному снимку.
-        </div>
+<div class="confidence">
+Уверенность предварительного анализа:
+<span id="confidence1"></span>%
+</div>
 
-    </div>
+
+<h2>Нужно уточнить несколько деталей</h2>
+
+<p>
+Ответьте на три вопроса. Это поможет AI отличить похожие причины
+и дать более конкретные рекомендации.
+</p>
+
+
+<div class="question">
+
+<div class="question-text" id="question1"></div>
+
+<textarea
+    id="answer1"
+    placeholder="Ваш ответ..."
+></textarea>
+
+</div>
+
+
+<div class="question">
+
+<div class="question-text" id="question2"></div>
+
+<textarea
+    id="answer2"
+    placeholder="Ваш ответ..."
+></textarea>
+
+</div>
+
+
+<div class="question">
+
+<div class="question-text" id="question3"></div>
+
+<textarea
+    id="answer3"
+    placeholder="Ваш ответ..."
+></textarea>
+
+</div>
+
+
+<button onclick="getConsultation()">
+Получить подробный план действий
+</button>
+
+</div>
+
+
+<div id="step2" class="section">
+
+<h2>Шаг 2. Итог консультации</h2>
+
+<div class="result-item">
+<span class="label">🩺 Уточнённая оценка</span>
+<span id="diagnosis"></span>
+</div>
+
+<div class="result-item">
+<span class="label">🔎 Наиболее вероятная причина</span>
+<span id="finalCause"></span>
+</div>
+
+<div class="result-item">
+
+<span class="label">✅ План действий</span>
+
+<ol id="actionPlan" class="plan"></ol>
+
+</div>
+
+<div class="result-item">
+<span class="label">👀 Что наблюдать дальше</span>
+<span id="monitor"></span>
+</div>
+
+<div class="result-item">
+<span class="label">📅 Повторная проверка</span>
+Через <span id="followUp"></span> дней рекомендуется
+сделать новую фотографию растения.
+</div>
+
+<div class="confidence">
+Уверенность после уточнения:
+<span id="confidence2"></span>%
+</div>
+
+<div class="notice">
+AI-анализ является ориентировочным. Некоторые заболевания,
+вредителей и проблемы корней невозможно достоверно определить
+только по фотографии и описанию.
+</div>
+
+</div>
 
 </div>
 </div>
+
 
 <script>
+
+let firstAnalysis = null;
+
 
 function showPreview() {
 
     const input = document.getElementById("photo");
     const preview = document.getElementById("preview");
 
-    document.getElementById("result").style.display = "none";
-    document.getElementById("error").innerHTML = "";
+    document.getElementById("step1").style.display = "none";
+    document.getElementById("step2").style.display = "none";
+    document.getElementById("error").innerText = "";
 
     if (!input.files.length) {
         preview.style.display = "none";
@@ -305,22 +358,20 @@ async function analyzePlant() {
 
     const input = document.getElementById("photo");
     const button = document.getElementById("analyzeButton");
-    const status = document.getElementById("status");
-    const result = document.getElementById("result");
-    const errorBox = document.getElementById("error");
 
     if (!input.files.length) {
-        errorBox.innerHTML =
-            '<div class="error">Сначала выберите фотографию растения.</div>';
+        document.getElementById("error").innerText =
+            "Сначала выберите фотографию.";
         return;
     }
 
-    errorBox.innerHTML = "";
-    result.style.display = "none";
-    status.style.display = "block";
+    document.getElementById("error").innerText = "";
+    document.getElementById("step1").style.display = "none";
+    document.getElementById("step2").style.display = "none";
+
+    document.getElementById("loading").style.display = "block";
 
     button.disabled = true;
-    button.innerText = "Идёт анализ...";
 
     const formData = new FormData();
     formData.append("file", input.files[0]);
@@ -338,39 +389,186 @@ async function analyzePlant() {
 
         const data = await response.json();
 
+        if (data.error || !Array.isArray(data.questions)) {
+            throw new Error("Invalid AI response");
+        }
+
+        firstAnalysis = data;
+
         document.getElementById("plantName").textContent =
-            data.plant_name || "Не удалось определить";
+            data.plant_name || "Не определено";
 
         document.getElementById("observations").textContent =
-            data.observations || "Нет данных";
+            data.observations || "-";
 
         document.getElementById("problem").textContent =
-            data.problem || "Нет данных";
+            data.preliminary_problem || "-";
 
-        document.getElementById("cause").textContent =
-            data.cause || "Нет данных";
+        document.getElementById("preliminaryCause").textContent =
+            data.preliminary_cause || "-";
 
-        document.getElementById("recommendation").textContent =
-            data.recommendation || "Нет данных";
+        document.getElementById("confidence1").textContent =
+            data.confidence ?? "-";
 
-        const confidence = Number(data.confidence) || 0;
+        document.getElementById("question1").textContent =
+            "1. " + data.questions[0];
 
-        document.getElementById("confidence").textContent = confidence;
-        document.getElementById("confidenceFill").style.width =
-            Math.min(Math.max(confidence, 0), 100) + "%";
+        document.getElementById("question2").textContent =
+            "2. " + data.questions[1];
 
-        result.style.display = "block";
+        document.getElementById("question3").textContent =
+            "3. " + data.questions[2];
+
+        document.getElementById("answer1").value = "";
+        document.getElementById("answer2").value = "";
+        document.getElementById("answer3").value = "";
+
+        document.getElementById("step1").style.display = "block";
 
     } catch (error) {
 
-        errorBox.innerHTML =
-            '<div class="error">Не удалось выполнить анализ. Попробуйте ещё раз.</div>';
+        document.getElementById("error").innerText =
+            "Не удалось выполнить анализ. Попробуйте ещё раз.";
 
     } finally {
 
-        status.style.display = "none";
+        document.getElementById("loading").style.display = "none";
         button.disabled = false;
-        button.innerText = "Анализировать растение";
+    }
+}
+
+
+async function getConsultation() {
+
+    if (!firstAnalysis) return;
+
+    const answer1 =
+        document.getElementById("answer1").value.trim();
+
+    const answer2 =
+        document.getElementById("answer2").value.trim();
+
+    const answer3 =
+        document.getElementById("answer3").value.trim();
+
+    if (!answer1 || !answer2 || !answer3) {
+
+        document.getElementById("error").innerText =
+            "Пожалуйста, ответьте на все три вопроса.";
+
+        return;
+    }
+
+    document.getElementById("error").innerText = "";
+    document.getElementById("loading").style.display = "block";
+
+    const formData = new FormData();
+
+    formData.append(
+        "plant_name",
+        firstAnalysis.plant_name || ""
+    );
+
+    formData.append(
+        "observations",
+        firstAnalysis.observations || ""
+    );
+
+    formData.append(
+        "preliminary_problem",
+        firstAnalysis.preliminary_problem || ""
+    );
+
+    formData.append(
+        "preliminary_cause",
+        firstAnalysis.preliminary_cause || ""
+    );
+
+    formData.append(
+        "question1",
+        firstAnalysis.questions[0]
+    );
+
+    formData.append("answer1", answer1);
+
+    formData.append(
+        "question2",
+        firstAnalysis.questions[1]
+    );
+
+    formData.append("answer2", answer2);
+
+    formData.append(
+        "question3",
+        firstAnalysis.questions[2]
+    );
+
+    formData.append("answer3", answer3);
+
+
+    try {
+
+        const response = await fetch("/consult", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error("Server error");
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error("Invalid AI response");
+        }
+
+        document.getElementById("diagnosis").textContent =
+            data.diagnosis || "-";
+
+        document.getElementById("finalCause").textContent =
+            data.cause || "-";
+
+        const plan =
+            document.getElementById("actionPlan");
+
+        plan.innerHTML = "";
+
+        (data.action_plan || []).forEach(item => {
+
+            const li =
+                document.createElement("li");
+
+            li.textContent = item;
+
+            plan.appendChild(li);
+        });
+
+        document.getElementById("monitor").textContent =
+            data.monitor || "-";
+
+        document.getElementById("followUp").textContent =
+            data.follow_up_days || 7;
+
+        document.getElementById("confidence2").textContent =
+            data.confidence ?? "-";
+
+        document.getElementById("step2").style.display =
+            "block";
+
+        document.getElementById("step2").scrollIntoView({
+            behavior: "smooth"
+        });
+
+    } catch (error) {
+
+        document.getElementById("error").innerText =
+            "Не удалось получить итоговую консультацию. Попробуйте ещё раз.";
+
+    } finally {
+
+        document.getElementById("loading").style.display =
+            "none";
     }
 }
 
