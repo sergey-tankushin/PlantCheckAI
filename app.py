@@ -268,6 +268,7 @@ async def consult(
     observations: str = Form(...),
     preliminary_problem: str = Form(...),
     possible_causes: str = Form("[]"),
+    preliminary_confidence: int = Form(0),
     qa_json: str = Form("[]"),
 ):
     enforce_rate_limit(request)
@@ -293,6 +294,7 @@ PLANT: {plant_name}
 OBSERVED FROM PHOTO: {json.dumps(observations_data, ensure_ascii=False)}
 PRELIMINARY ASSESSMENT: {preliminary_problem}
 PRELIMINARY HYPOTHESES: {json.dumps(causes_data, ensure_ascii=False)}
+PRELIMINARY CONFIDENCE: {preliminary_confidence}
 USER ANSWERS: {json.dumps(qa_data, ensure_ascii=False)}
 
 DIAGNOSTIC RULES:
@@ -309,7 +311,13 @@ DIAGNOSTIC RULES:
    sign would justify it.
 6. Do not invent temperatures, watering frequency, drainage quality, root condition,
    pests or environmental events that were not observed or reported.
-7. Confidence must reflect evidence quality. Lower it when important information is missing.
+7. Confidence must reflect the quality and consistency of all available evidence.
+   Use PRELIMINARY CONFIDENCE as the starting reference.
+   After considering USER ANSWERS:
+   - increase confidence when relevant new evidence consistently supports the leading hypothesis;
+   - keep it similar when the answers add little diagnostic information;
+   - decrease confidence when the answers contradict the preliminary hypothesis, introduce meaningful alternative explanations, or reveal that important information is still missing.
+   Do not increase or decrease confidence merely because Step 2 was completed.
 8. Recommendations should be practical, calm and concise.
 
 Return ONLY valid JSON without Markdown, exactly:

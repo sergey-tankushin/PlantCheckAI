@@ -350,6 +350,7 @@ async function getConsultation() {
   formData.append("observations", JSON.stringify(observations));
   formData.append("preliminary_problem", firstAnalysis.preliminary_problem || "");
   formData.append("possible_causes", JSON.stringify(firstAnalysis.possible_causes || []));
+  formData.append("preliminary_confidence", String(firstAnalysis.confidence ?? 0));
   formData.append("qa_json", JSON.stringify(qa));
 
   try {
