@@ -118,7 +118,7 @@ def root():
 
 @app.get("/ru/")
 def ru_home():
-    return FileResponse("home_ru.html")
+    return RedirectResponse(url="/ru/diagnosis/", status_code=307)
 
 
 @app.get("/ru/diagnosis/")
