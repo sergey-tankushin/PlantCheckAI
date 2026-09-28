@@ -1,578 +1,404 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>PlantCheck AI</title>
-
+<title>Диагностика растения по фото — PLANTIVA</title>
 <style>
-
 * { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f3f7f3;
-    color: #263326;
-}
-
-.container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-}
-
-.card {
-    background: white;
-    border-radius: 20px;
-    padding: 32px;
-    box-shadow: 0 8px 30px rgba(0,0,0,.08);
-}
-
-h1 { margin-top: 0; }
-
-.subtitle {
-    color: #607060;
-    line-height: 1.5;
-    margin-bottom: 25px;
-}
-
-.upload-area {
-    background: #f7faf7;
-    border: 2px dashed #a9bca9;
-    border-radius: 14px;
-    padding: 22px;
-}
-
-#preview {
-    display: none;
-    max-width: 100%;
-    max-height: 480px;
-    margin: 20px auto 0;
-    border-radius: 14px;
-}
-
-button {
-    width: 100%;
-    margin-top: 18px;
-    padding: 15px;
-    border: 0;
-    border-radius: 12px;
-    background: #287a43;
-    color: white;
-    font-size: 17px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:disabled {
-    opacity: .6;
-}
-
-.section {
-    margin-top: 30px;
-}
-
-.result-item {
-    background: #f7faf7;
-    border-radius: 12px;
-    padding: 17px;
-    margin-bottom: 12px;
-    line-height: 1.55;
-}
-
-.label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 6px;
-}
-
-.question {
-    margin: 18px 0;
-}
-
-.question-text {
-    font-weight: bold;
-    margin-bottom: 8px;
-    line-height: 1.45;
-}
-
-textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 12px;
-    border: 1px solid #b9c6b9;
-    border-radius: 9px;
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-}
-
-.notice {
-    margin-top: 20px;
-    padding: 15px;
-    background: #fff8e6;
-    border-radius: 10px;
-    line-height: 1.5;
-    font-size: 14px;
-}
-
-#loading {
-    display: none;
-    text-align: center;
-    margin-top: 20px;
-    font-weight: bold;
-}
-
-#error {
-    color: #9b2929;
-    margin-top: 18px;
-}
-
-#step1, #step2 {
-    display: none;
-}
-
-.plan li {
-    margin-bottom: 9px;
-    line-height: 1.45;
-}
-
-.confidence {
-    font-weight: bold;
-    margin-top: 15px;
-}
-
+body { margin:0; font-family:Arial,sans-serif; background:#f5f0e5; color:#263326; }
+.container { max-width:860px; margin:40px auto; padding:20px; }
+.card { background:white; border-radius:20px; padding:32px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+h1 { margin-top:0; font-family:Georgia,serif; color:#173c2d; letter-spacing:1px; }
+h2 { color:#173c2d; margin-top:30px; }
+.subtitle { color:#607060; line-height:1.5; margin-bottom:25px; }
+.upload-area { background:#f7faf7; border:2px dashed #a9bca9; border-radius:14px; padding:22px; }
+#preview { display:none; max-width:100%; max-height:480px; margin:20px auto 0; border-radius:14px; }
+button { width:100%; margin-top:18px; padding:15px; border:0; border-radius:12px; background:#286448; color:white; font-size:17px; font-weight:bold; cursor:pointer; }
+button:disabled { opacity:.6; cursor:default; }
+.section { margin-top:30px; }
+.result-item { background:#f7faf7; border-radius:12px; padding:17px; margin-bottom:12px; line-height:1.55; }
+.label { display:block; font-weight:bold; margin-bottom:6px; }
+.question { margin:20px 0; padding:17px; background:#f7faf7; border-radius:12px; }
+.question-text { font-weight:bold; margin-bottom:12px; line-height:1.45; }
+.options { display:flex; flex-wrap:wrap; gap:9px; }
+.option-button { width:auto; margin:0; padding:10px 14px; border:1px solid #9eb3a5; border-radius:999px; background:white; color:#244a38; font-size:15px; font-weight:600; }
+.option-button.selected { background:#286448; color:white; border-color:#286448; }
+textarea { width:100%; min-height:70px; padding:12px; border:1px solid #b9c6b9; border-radius:9px; font-family:Arial,sans-serif; font-size:15px; }
+.notice { margin-top:20px; padding:15px; background:#fff8e6; border-radius:10px; line-height:1.5; font-size:14px; }
+#loading { display:none; text-align:center; margin-top:20px; font-weight:bold; }
+#error { color:#9b2929; margin-top:18px; line-height:1.45; }
+#step1,#step2 { display:none; }
+.plan li, .plain-list li { margin-bottom:9px; line-height:1.45; }
+.confidence { font-weight:bold; margin-top:15px; }
+.hypothesis { margin-bottom:8px; }
 @media (max-width:600px) {
-
-    .container {
-        margin: 10px auto;
-        padding: 10px;
-    }
-
-    .card {
-        padding: 20px;
-    }
+  .container { margin:10px auto; padding:10px; }
+  .card { padding:20px; }
+  .option-button { width:100%; }
 }
-
 </style>
 </head>
-
 <body>
-
-<div class="container">
-<div class="card">
-
-<h1>🌿 PlantCheck AI</h1>
-
-<div class="subtitle">
-Загрузите фотографию растения. AI сначала проведёт предварительный
-анализ, затем задаст несколько уточняющих вопросов и подготовит
-персональный план действий.
-</div>
+<div class="container"><div class="card">
+<h1>PLANTIVA</h1>
+<div class="subtitle">Покажите растение. PLANTIVA оценит видимые признаки, задаст только нужные уточняющие вопросы и подготовит рекомендации.</div>
 
 <div class="upload-area">
-
-<b>Фотография растения</b>
-<br><br>
-
-<input
-    type="file"
-    id="photo"
-    accept="image/*"
-    onchange="showPreview()"
->
-
-<img id="preview">
-
+  <b>Фотография растения</b><br><br>
+  <input type="file" id="photo" accept="image/*" onchange="showPreview()">
+  <img id="preview">
 </div>
 
-<button id="analyzeButton" onclick="analyzePlant()">
-Начать диагностику
-</button>
-
-<div id="loading">
-🌿 AI анализирует информацию...
-</div>
-
+<button id="analyzeButton" onclick="analyzePlant()">Начать диагностику</button>
+<div id="loading">🌿 PLANTIVA анализирует информацию...</div>
 <div id="error"></div>
 
-
 <div id="step1" class="section">
+  <h2>Шаг 1. Предварительный анализ</h2>
 
-<h2>Шаг 1. Предварительный анализ</h2>
+  <div class="result-item"><span class="label">🌱 Растение</span><span id="plantName"></span></div>
 
-<div class="result-item">
-<span class="label">🌱 Растение</span>
-<span id="plantName"></span>
+  <div class="result-item">
+    <span class="label">👁 Что видно на фото</span>
+    <ul id="observations" class="plain-list"></ul>
+  </div>
+
+  <div class="result-item"><span class="label">⚠️ Предварительная оценка</span><span id="problem"></span></div>
+
+  <div class="result-item">
+    <span class="label">🔎 Возможные причины</span>
+    <div id="possibleCauses"></div>
+  </div>
+
+  <div class="confidence">Уверенность предварительного анализа: <span id="confidence1"></span>%</div>
+
+  <h2>Нужно уточнить несколько деталей</h2>
+  <p>Ответьте на вопросы ниже. PLANTIVA спрашивает только то, что помогает отличить похожие причины.</p>
+  <div id="questionsContainer"></div>
+
+  <button id="consultButton" type="button" onclick="getConsultation()">Получить рекомендации</button>
+  <div id="consultStatus" style="display:none; margin-top:12px; font-weight:600; color:#286b4d;">🌿 PLANTIVA готовит рекомендации…</div>
 </div>
-
-<div class="result-item">
-<span class="label">👁 Что видно</span>
-<span id="observations"></span>
-</div>
-
-<div class="result-item">
-<span class="label">⚠️ Возможная проблема</span>
-<span id="problem"></span>
-</div>
-
-<div class="result-item">
-<span class="label">🔎 Предварительная причина</span>
-<span id="preliminaryCause"></span>
-</div>
-
-<div class="confidence">
-Уверенность предварительного анализа:
-<span id="confidence1"></span>%
-</div>
-
-
-<h2>Нужно уточнить несколько деталей</h2>
-
-<p>
-Ответьте на три вопроса. Это поможет AI отличить похожие причины
-и дать более конкретные рекомендации.
-</p>
-
-
-<div class="question">
-
-<div class="question-text" id="question1"></div>
-
-<textarea
-    id="answer1"
-    placeholder="Ваш ответ..."
-></textarea>
-
-</div>
-
-
-<div class="question">
-
-<div class="question-text" id="question2"></div>
-
-<textarea
-    id="answer2"
-    placeholder="Ваш ответ..."
-></textarea>
-
-</div>
-
-
-<div class="question">
-
-<div class="question-text" id="question3"></div>
-
-<textarea
-    id="answer3"
-    placeholder="Ваш ответ..."
-></textarea>
-
-</div>
-
-
-<button onclick="getConsultation()">
-Получить подробный план действий
-</button>
-
-</div>
-
 
 <div id="step2" class="section">
+  <h2>Шаг 2. Рекомендации</h2>
 
-<h2>Шаг 2. Итог консультации</h2>
+  <div class="result-item"><span class="label">🩺 Уточнённая оценка</span><span id="assessment"></span></div>
 
-<div class="result-item">
-<span class="label">🩺 Уточнённая оценка</span>
-<span id="diagnosis"></span>
+  <div class="result-item" id="factsBlock">
+    <span class="label">📌 На чём основана оценка</span>
+    <ul id="facts" class="plain-list"></ul>
+  </div>
+
+  <div class="result-item">
+    <span class="label">🔎 Основная гипотеза</span>
+    <span id="mainHypothesis"></span>
+  </div>
+
+  <div class="result-item" id="alternativesBlock" style="display:none">
+    <span class="label">Другие возможные причины</span>
+    <ul id="alternatives" class="plain-list"></ul>
+  </div>
+
+  <div class="result-item" id="reasoningBlock" style="display:none">
+    <span class="label">Почему это вероятно</span>
+    <ul id="reasoning" class="plain-list"></ul>
+  </div>
+
+  <div class="result-item">
+    <span class="label">✅ Что сделать сейчас</span>
+    <ol id="actionPlan" class="plan"></ol>
+  </div>
+
+  <div class="result-item" id="avoidBlock" style="display:none">
+    <span class="label">Чего сейчас не делать</span>
+    <ul id="avoid" class="plain-list"></ul>
+  </div>
+
+  <div class="result-item">
+    <span class="label">👀 Что наблюдать дальше</span>
+    <ul id="monitor" class="plain-list"></ul>
+  </div>
+
+  <div class="result-item" id="escalationBlock" style="display:none">
+    <span class="label">Когда нужна более серьёзная проверка</span>
+    <span id="escalation"></span>
+  </div>
+
+  <div class="result-item">
+    <span class="label">📅 Повторная проверка</span>
+    Через <span id="followUp"></span> дней рекомендуется сделать новую фотографию растения.
+  </div>
+
+  <div class="confidence">Уверенность после уточнения: <span id="confidence2"></span>%</div>
+
+  <div class="notice">Оценка PLANTIVA является ориентировочной. Некоторые заболевания, вредителей и проблемы корней невозможно достоверно определить только по фотографии и описанию.</div>
 </div>
 
-<div class="result-item">
-<span class="label">🔎 Наиболее вероятная причина</span>
-<span id="finalCause"></span>
-</div>
-
-<div class="result-item">
-
-<span class="label">✅ План действий</span>
-
-<ol id="actionPlan" class="plan"></ol>
-
-</div>
-
-<div class="result-item">
-<span class="label">👀 Что наблюдать дальше</span>
-<span id="monitor"></span>
-</div>
-
-<div class="result-item">
-<span class="label">📅 Повторная проверка</span>
-Через <span id="followUp"></span> дней рекомендуется
-сделать новую фотографию растения.
-</div>
-
-<div class="confidence">
-Уверенность после уточнения:
-<span id="confidence2"></span>%
-</div>
-
-<div class="notice">
-AI-анализ является ориентировочным. Некоторые заболевания,
-вредителей и проблемы корней невозможно достоверно определить
-только по фотографии и описанию.
-</div>
-
-</div>
-
-</div>
-</div>
-
+</div></div>
 
 <script>
-
 let firstAnalysis = null;
-
+const answers = {};
 
 function showPreview() {
+  const input = document.getElementById("photo");
+  const preview = document.getElementById("preview");
+  document.getElementById("step1").style.display = "none";
+  document.getElementById("step2").style.display = "none";
+  document.getElementById("error").innerText = "";
+  firstAnalysis = null;
+  Object.keys(answers).forEach(key => delete answers[key]);
 
-    const input = document.getElementById("photo");
-    const preview = document.getElementById("preview");
-
-    document.getElementById("step1").style.display = "none";
-    document.getElementById("step2").style.display = "none";
-    document.getElementById("error").innerText = "";
-
-    if (!input.files.length) {
-        preview.style.display = "none";
-        return;
-    }
-
-    preview.src = URL.createObjectURL(input.files[0]);
-    preview.style.display = "block";
+  if (!input.files.length) {
+    preview.style.display = "none";
+    return;
+  }
+  preview.src = URL.createObjectURL(input.files[0]);
+  preview.style.display = "block";
 }
 
+function setList(id, items) {
+  const list = document.getElementById(id);
+  list.innerHTML = "";
+  (items || []).forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    list.appendChild(li);
+  });
+}
+
+function renderQuestions(questions) {
+  const container = document.getElementById("questionsContainer");
+  container.innerHTML = "";
+  Object.keys(answers).forEach(key => delete answers[key]);
+
+  questions.forEach((q, index) => {
+    const id = q.id || `q${index + 1}`;
+    const block = document.createElement("div");
+    block.className = "question";
+
+    const title = document.createElement("div");
+    title.className = "question-text";
+    title.textContent = `${index + 1}. ${q.text}`;
+    block.appendChild(title);
+
+    if (q.type === "single_choice" && Array.isArray(q.options) && q.options.length >= 2) {
+      const options = document.createElement("div");
+      options.className = "options";
+
+      q.options.forEach(option => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "option-button";
+        button.textContent = option;
+        button.onclick = () => {
+          answers[id] = option;
+          options.querySelectorAll(".option-button").forEach(b => b.classList.remove("selected"));
+          button.classList.add("selected");
+          const otherInput = block.querySelector(".other-answer");
+          if (otherInput) {
+            otherInput.style.display = "none";
+            otherInput.value = "";
+          }
+          document.getElementById("error").innerText = "";
+        };
+        options.appendChild(button);
+      });
+
+      const otherButton = document.createElement("button");
+      otherButton.type = "button";
+      otherButton.className = "option-button";
+      otherButton.textContent = "Другое";
+      options.appendChild(otherButton);
+
+      const otherInput = document.createElement("textarea");
+      otherInput.className = "other-answer";
+      otherInput.placeholder = "Введите свой ответ...";
+      otherInput.style.display = "none";
+      otherInput.style.marginTop = "12px";
+
+      otherButton.onclick = () => {
+        answers[id] = "";
+        options.querySelectorAll(".option-button").forEach(b => b.classList.remove("selected"));
+        otherButton.classList.add("selected");
+        otherInput.style.display = "block";
+        otherInput.focus();
+        document.getElementById("error").innerText = "";
+      };
+
+      otherInput.oninput = () => {
+        answers[id] = otherInput.value.trim();
+        document.getElementById("error").innerText = "";
+      };
+
+      block.appendChild(options);
+      block.appendChild(otherInput);
+    } else {
+      const textarea = document.createElement("textarea");
+      textarea.placeholder = "Короткий ответ...";
+      textarea.oninput = () => {
+        answers[id] = textarea.value.trim();
+        document.getElementById("error").innerText = "";
+      };
+      block.appendChild(textarea);
+    }
+
+    container.appendChild(block);
+  });
+}
 
 async function analyzePlant() {
+  const input = document.getElementById("photo");
+  const button = document.getElementById("analyzeButton");
 
-    const input = document.getElementById("photo");
-    const button = document.getElementById("analyzeButton");
+  if (!input.files.length) {
+    document.getElementById("error").innerText = "Сначала выберите фотографию.";
+    return;
+  }
 
-    if (!input.files.length) {
-        document.getElementById("error").innerText =
-            "Сначала выберите фотографию.";
-        return;
+  document.getElementById("error").innerText = "";
+  document.getElementById("step1").style.display = "none";
+  document.getElementById("step2").style.display = "none";
+  document.getElementById("loading").style.display = "block";
+  button.disabled = true;
+
+  const formData = new FormData();
+  formData.append("file", input.files[0]);
+  const initialProblem = new URLSearchParams(window.location.search).get("problem") || "";
+  formData.append("initial_problem", initialProblem);
+
+  try {
+    const response = await fetch("/analyze", { method:"POST", body:formData });
+    if (!response.ok) throw new Error("Server error");
+    const data = await response.json();
+
+    if (data.error || !Array.isArray(data.questions) || data.questions.length < 1) {
+      throw new Error(data.error || "Invalid AI response");
     }
 
-    document.getElementById("error").innerText = "";
-    document.getElementById("step1").style.display = "none";
-    document.getElementById("step2").style.display = "none";
+    firstAnalysis = data;
+    document.getElementById("plantName").textContent = data.plant_name || "Не определено";
 
-    document.getElementById("loading").style.display = "block";
+    const observations = Array.isArray(data.observations)
+      ? data.observations
+      : (data.observations ? [data.observations] : []);
+    setList("observations", observations);
 
-    button.disabled = true;
+    document.getElementById("problem").textContent = data.preliminary_problem || "-";
 
-    const formData = new FormData();
-    formData.append("file", input.files[0]);
+    const causesBox = document.getElementById("possibleCauses");
+    causesBox.innerHTML = "";
+    (data.possible_causes || []).forEach(item => {
+      const div = document.createElement("div");
+      div.className = "hypothesis";
+      const cause = typeof item === "string" ? item : (item.cause || "");
+      const why = typeof item === "object" ? (item.why || "") : "";
+      div.textContent = why ? `${cause} — ${why}` : cause;
+      causesBox.appendChild(div);
+    });
+    if (!causesBox.textContent.trim()) causesBox.textContent = "Недостаточно данных для уверенной причины.";
 
-    try {
+    document.getElementById("confidence1").textContent = data.confidence ?? "-";
+    renderQuestions(data.questions);
+    document.getElementById("step1").style.display = "block";
+    document.getElementById("step1").scrollIntoView({behavior:"smooth"});
 
-        const response = await fetch("/analyze", {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error("Server error");
-        }
-
-        const data = await response.json();
-
-        if (data.error || !Array.isArray(data.questions)) {
-            throw new Error("Invalid AI response");
-        }
-
-        firstAnalysis = data;
-
-        document.getElementById("plantName").textContent =
-            data.plant_name || "Не определено";
-
-        document.getElementById("observations").textContent =
-            data.observations || "-";
-
-        document.getElementById("problem").textContent =
-            data.preliminary_problem || "-";
-
-        document.getElementById("preliminaryCause").textContent =
-            data.preliminary_cause || "-";
-
-        document.getElementById("confidence1").textContent =
-            data.confidence ?? "-";
-
-        document.getElementById("question1").textContent =
-            "1. " + data.questions[0];
-
-        document.getElementById("question2").textContent =
-            "2. " + data.questions[1];
-
-        document.getElementById("question3").textContent =
-            "3. " + data.questions[2];
-
-        document.getElementById("answer1").value = "";
-        document.getElementById("answer2").value = "";
-        document.getElementById("answer3").value = "";
-
-        document.getElementById("step1").style.display = "block";
-
-    } catch (error) {
-
-        document.getElementById("error").innerText =
-            "Не удалось выполнить анализ. Попробуйте ещё раз.";
-
-    } finally {
-
-        document.getElementById("loading").style.display = "none";
-        button.disabled = false;
-    }
+  } catch (error) {
+    document.getElementById("error").innerText =
+      "Не удалось выполнить анализ. Если лимит Gemini исчерпан, попробуйте позже.";
+  } finally {
+    document.getElementById("loading").style.display = "none";
+    button.disabled = false;
+  }
 }
-
 
 async function getConsultation() {
+  const consultButton = document.getElementById("consultButton");
+  const consultStatus = document.getElementById("consultStatus");
 
-    if (!firstAnalysis) return;
+  if (!firstAnalysis) {
+    document.getElementById("error").innerText = "Сначала выполните предварительный анализ.";
+    return;
+  }
 
-    const answer1 =
-        document.getElementById("answer1").value.trim();
-
-    const answer2 =
-        document.getElementById("answer2").value.trim();
-
-    const answer3 =
-        document.getElementById("answer3").value.trim();
-
-    if (!answer1 || !answer2 || !answer3) {
-
-        document.getElementById("error").innerText =
-            "Пожалуйста, ответьте на все три вопроса.";
-
-        return;
+  const qa = [];
+  for (let index = 0; index < firstAnalysis.questions.length; index++) {
+    const q = firstAnalysis.questions[index];
+    const id = q.id || `q${index + 1}`;
+    const answer = (answers[id] || "").trim();
+    if (!answer) {
+      document.getElementById("error").innerText =
+        `Ответьте на вопрос ${index + 1}, чтобы получить рекомендации.`;
+      return;
     }
+    qa.push({ question:q.text, answer:answer });
+  }
 
-    document.getElementById("error").innerText = "";
-    document.getElementById("loading").style.display = "block";
+  document.getElementById("error").innerText = "";
+  consultButton.disabled = true;
+  consultButton.textContent = "PLANTIVA готовит рекомендации…";
+  consultStatus.style.display = "block";
 
-    const formData = new FormData();
+  const observations = Array.isArray(firstAnalysis.observations)
+    ? firstAnalysis.observations
+    : (firstAnalysis.observations ? [firstAnalysis.observations] : []);
 
-    formData.append(
-        "plant_name",
-        firstAnalysis.plant_name || ""
-    );
+  const formData = new FormData();
+  formData.append("plant_name", firstAnalysis.plant_name || "");
+  formData.append("observations", JSON.stringify(observations));
+  formData.append("preliminary_problem", firstAnalysis.preliminary_problem || "");
+  formData.append("possible_causes", JSON.stringify(firstAnalysis.possible_causes || []));
+  formData.append("qa_json", JSON.stringify(qa));
 
-    formData.append(
-        "observations",
-        firstAnalysis.observations || ""
-    );
+  try {
+    const response = await fetch("/consult", { method:"POST", body:formData });
+    if (!response.ok) throw new Error("Server error");
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
 
-    formData.append(
-        "preliminary_problem",
-        firstAnalysis.preliminary_problem || ""
-    );
+    document.getElementById("assessment").textContent = data.assessment || "-";
+    setList("facts", data.facts || []);
+    document.getElementById("factsBlock").style.display = (data.facts || []).length ? "block" : "none";
 
-    formData.append(
-        "preliminary_cause",
-        firstAnalysis.preliminary_cause || ""
-    );
+    document.getElementById("mainHypothesis").textContent = data.main_hypothesis || "-";
 
-    formData.append(
-        "question1",
-        firstAnalysis.questions[0]
-    );
+    setList("alternatives", data.alternative_causes || []);
+    document.getElementById("alternativesBlock").style.display =
+      (data.alternative_causes || []).length ? "block" : "none";
 
-    formData.append("answer1", answer1);
+    setList("reasoning", data.reasoning || []);
+    document.getElementById("reasoningBlock").style.display =
+      (data.reasoning || []).length ? "block" : "none";
 
-    formData.append(
-        "question2",
-        firstAnalysis.questions[1]
-    );
+    setList("actionPlan", data.action_plan || []);
 
-    formData.append("answer2", answer2);
+    setList("avoid", data.avoid || []);
+    document.getElementById("avoidBlock").style.display =
+      (data.avoid || []).length ? "block" : "none";
 
-    formData.append(
-        "question3",
-        firstAnalysis.questions[2]
-    );
+    setList("monitor", data.monitor || []);
 
-    formData.append("answer3", answer3);
+    document.getElementById("escalation").textContent = data.escalation || "";
+    document.getElementById("escalationBlock").style.display =
+      data.escalation ? "block" : "none";
 
+    document.getElementById("followUp").textContent = data.follow_up_days || 7;
+    document.getElementById("confidence2").textContent = data.confidence ?? "-";
 
-    try {
+    document.getElementById("step2").style.display = "block";
+    document.getElementById("step2").scrollIntoView({behavior:"smooth"});
 
-        const response = await fetch("/consult", {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error("Server error");
-        }
-
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error("Invalid AI response");
-        }
-
-        document.getElementById("diagnosis").textContent =
-            data.diagnosis || "-";
-
-        document.getElementById("finalCause").textContent =
-            data.cause || "-";
-
-        const plan =
-            document.getElementById("actionPlan");
-
-        plan.innerHTML = "";
-
-        (data.action_plan || []).forEach(item => {
-
-            const li =
-                document.createElement("li");
-
-            li.textContent = item;
-
-            plan.appendChild(li);
-        });
-
-        document.getElementById("monitor").textContent =
-            data.monitor || "-";
-
-        document.getElementById("followUp").textContent =
-            data.follow_up_days || 7;
-
-        document.getElementById("confidence2").textContent =
-            data.confidence ?? "-";
-
-        document.getElementById("step2").style.display =
-            "block";
-
-        document.getElementById("step2").scrollIntoView({
-            behavior: "smooth"
-        });
-
-    } catch (error) {
-
-        document.getElementById("error").innerText =
-            "Не удалось получить итоговую консультацию. Попробуйте ещё раз.";
-
-    } finally {
-
-        document.getElementById("loading").style.display =
-            "none";
-    }
+  } catch (error) {
+    document.getElementById("error").innerText =
+      "Не удалось получить рекомендации. Если лимит Gemini исчерпан, попробуйте позже.";
+  } finally {
+    consultButton.disabled = false;
+    consultButton.textContent = "Получить рекомендации";
+    consultStatus.style.display = "none";
+  }
 }
-
 </script>
-
 </body>
 </html>
